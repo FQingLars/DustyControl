@@ -54,7 +54,6 @@ cargo run
 
 - Rust 1.70+
 - Linux with Wayland (not tested on any other system)
-- `wl-clipboard` for CLI clipboard (optional, arboard used by default)
 
 ## License
 
