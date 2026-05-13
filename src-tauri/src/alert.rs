@@ -1,6 +1,5 @@
 use std::collections::HashMap;
 
-use crate::audio::AudioEngine;
 use crate::config::Config;
 use crate::types::*;
 
@@ -22,7 +21,6 @@ impl AlertEngine {
     pub fn check(
         &mut self,
         metrics: &SystemMetrics,
-        audio: &AudioEngine,
     ) -> Vec<AlertEventInfo> {
         if self.rules.is_empty() {
             return Vec::new();
@@ -42,7 +40,6 @@ impl AlertEngine {
                         .unwrap_or(true);
 
                     if should_fire {
-                        audio.play(&rule.sound);
                         self.cooldowns
                             .insert(cooldown_key, std::time::Instant::now());
                     }

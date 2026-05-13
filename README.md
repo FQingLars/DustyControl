@@ -1,60 +1,7 @@
-# DustyControl
+# Tauri + Vanilla
 
-A system resources monitor with sound alarms function.
+This template should help get you started developing with Tauri in vanilla HTML, CSS and Javascript.
 
-## Features
+## Recommended IDE Setup
 
-- **GUI Application** (iced) — visual application
-- **Dashboard** - system resources monitor
-- **Processes** - system processes control
-- **Alarms** - sound alarms history
-- **Settings** - General settings and Alarm Rules
-
-## Installation
-
-```bash
-# Clone and build
-cargo build --release
-
-# Install binaries
-cargo install --path .
-```
-
-## GUI Usage
-
-```bash
-# Launch GUI
-./target/release/DustyControl
-```
-
-### Sound Alarms
-
-- **beep**
-- **alert**
-- **alarm**
-- **notification**
-- **critical**
-- **warnsiren**
-- **chime**
-
-## Development
-
-```bash
-# Build
-cargo build
-
-# Run tests
-cargo test
-
-# Run GUI
-cargo run
-```
-
-## Requirements
-
-- Rust 1.70+
-- Linux with Wayland (not tested on any other system)
-
-## License
-
-MIT
+- [VS Code](https://code.visualstudio.com/) + [Tauri](https://marketplace.visualstudio.com/items?itemName=tauri-apps.tauri-vscode) + [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer)

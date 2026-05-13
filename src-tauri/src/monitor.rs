@@ -1,6 +1,4 @@
-use std::sync::mpsc;
-use std::thread;
-use std::time::{Duration, Instant};
+use std::time::Instant;
 
 use sysinfo::System;
 
@@ -13,37 +11,6 @@ pub struct Monitor {
     prev_net_rx: u64,
     prev_net_tx: u64,
     prev_time: Instant,
-}
-
-pub fn start_monitoring(rx: mpsc::Receiver<MonitorCommand>, tx: mpsc::Sender<SystemMetrics>) {
-    thread::spawn(move || {
-        let mut monitor = Monitor::new();
-        let mut running = true;
-
-        while running {
-            let deadline = Instant::now() + Duration::from_millis(UPDATE_INTERVAL_MS);
-
-            let metrics = monitor.collect();
-            let _ = tx.send(metrics);
-
-            while let Ok(cmd) = rx.try_recv() {
-                match cmd {
-                    MonitorCommand::Shutdown => running = false,
-                    MonitorCommand::SetInterval(_) => {}
-                }
-            }
-
-            let elapsed = Instant::now().duration_since(deadline);
-            if elapsed < Duration::from_millis(UPDATE_INTERVAL_MS) {
-                thread::sleep(Duration::from_millis(UPDATE_INTERVAL_MS) - elapsed);
-            }
-        }
-    });
-}
-
-pub enum MonitorCommand {
-    Shutdown,
-    SetInterval(u64),
 }
 
 impl Monitor {
@@ -86,6 +53,19 @@ impl Monitor {
             processes,
             battery,
         }
+    }
+
+    pub fn cpu_core_count(&self) -> usize {
+        self.sys.cpus().len()
+    }
+
+    pub fn gpu_count(&self) -> usize {
+        let mut count = 0;
+        if self.nvidia_gpu.is_some() {
+            count += 1;
+        }
+        count += self.sysfs_gpu_monitors.len();
+        count
     }
 
     fn collect_cpu(&self) -> CpuMetrics {

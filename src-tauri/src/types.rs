@@ -1,10 +1,8 @@
 use std::collections::VecDeque;
 
 pub const METRICS_HISTORY_LEN: usize = 120;
-pub const UPDATE_INTERVAL_MS: u64 = 1000;
 
-#[derive(Clone, Debug)]
-#[allow(dead_code)]
+#[derive(Clone, Debug, serde::Serialize)]
 pub struct CpuMetrics {
     pub total_usage: f64,
     pub per_core_usage: Vec<f64>,
@@ -13,8 +11,7 @@ pub struct CpuMetrics {
     pub load_avg: [f64; 3],
 }
 
-#[derive(Clone, Debug)]
-#[allow(dead_code)]
+#[derive(Clone, Debug, serde::Serialize)]
 pub struct MemoryMetrics {
     pub total: u64,
     pub used: u64,
@@ -25,12 +22,12 @@ pub struct MemoryMetrics {
     pub percent: f64,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, serde::Serialize)]
 pub struct DiskMetrics {
     pub disks: Vec<DiskInfo>,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, serde::Serialize)]
 pub struct DiskInfo {
     pub mount_point: String,
     pub total: u64,
@@ -38,23 +35,20 @@ pub struct DiskInfo {
     pub percent: f64,
 }
 
-#[derive(Clone, Debug)]
-#[allow(dead_code)]
+#[derive(Clone, Debug, serde::Serialize)]
 pub struct NetTraffic {
     pub rx: u64,
     pub tx: u64,
 }
 
-#[derive(Clone, Debug)]
-#[allow(dead_code)]
+#[derive(Clone, Debug, serde::Serialize)]
 pub struct NetworkMetrics {
     pub interfaces: Vec<(String, NetTraffic)>,
     pub total_rx: u64,
     pub total_tx: u64,
 }
 
-#[derive(Clone, Debug)]
-#[allow(dead_code)]
+#[derive(Clone, Debug, serde::Serialize)]
 pub struct GpuInfo {
     pub name: String,
     pub temperature: Option<f64>,
@@ -64,7 +58,7 @@ pub struct GpuInfo {
     pub vendor: GpuVendor,
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, serde::Serialize)]
 pub enum GpuVendor {
     Nvidia,
     Amd,
@@ -72,13 +66,12 @@ pub enum GpuVendor {
     Unknown,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, serde::Serialize)]
 pub struct GpuMetrics {
     pub gpus: Vec<GpuInfo>,
 }
 
-#[derive(Clone, Debug)]
-#[allow(dead_code)]
+#[derive(Clone, Debug, serde::Serialize)]
 pub struct ProcessInfo {
     pub pid: u32,
     pub name: String,
@@ -88,14 +81,13 @@ pub struct ProcessInfo {
     pub state: String,
 }
 
-#[derive(Clone, Debug)]
-#[allow(dead_code)]
+#[derive(Clone, Debug, serde::Serialize)]
 pub struct BatteryMetrics {
     pub capacity: Option<f64>,
     pub charging: Option<bool>,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, serde::Serialize)]
 pub struct SystemMetrics {
     pub cpu: CpuMetrics,
     pub memory: MemoryMetrics,
@@ -106,8 +98,23 @@ pub struct SystemMetrics {
     pub battery: BatteryMetrics,
 }
 
-#[derive(Clone, Debug)]
-#[allow(dead_code)]
+#[derive(Clone, Debug, serde::Serialize)]
+pub struct MetricsHistorySnapshot {
+    pub cpu_total: VecDeque<f64>,
+    pub cpu_per_core: Vec<VecDeque<f64>>,
+    pub ram_usage: VecDeque<f64>,
+    pub gpu_temperatures: Vec<VecDeque<f64>>,
+    pub net_rx: VecDeque<f64>,
+    pub net_tx: VecDeque<f64>,
+    pub cpu_temp: VecDeque<f64>,
+}
+
+#[derive(Clone, Debug, serde::Serialize)]
+pub struct MetricsUpdatePayload {
+    pub metrics: SystemMetrics,
+    pub history: MetricsHistorySnapshot,
+}
+
 pub struct MetricsHistory {
     pub timestamps: VecDeque<chrono::DateTime<chrono::Utc>>,
     pub cpu_total: VecDeque<f64>,
@@ -184,6 +191,18 @@ impl MetricsHistory {
             self.net_tx.pop_front();
         }
     }
+
+    pub fn snapshot(&self) -> MetricsHistorySnapshot {
+        MetricsHistorySnapshot {
+            cpu_total: self.cpu_total.clone(),
+            cpu_per_core: self.cpu_per_core.clone(),
+            ram_usage: self.ram_usage.clone(),
+            gpu_temperatures: self.gpu_temperatures.clone(),
+            net_rx: self.net_rx.clone(),
+            net_tx: self.net_tx.clone(),
+            cpu_temp: self.cpu_temp.clone(),
+        }
+    }
 }
 
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
@@ -228,8 +247,7 @@ impl std::fmt::Display for AlertEvent {
     }
 }
 
-#[derive(Clone, Debug)]
-#[allow(dead_code)]
+#[derive(Clone, Debug, serde::Serialize)]
 pub struct AlertEventInfo {
     pub event: AlertEvent,
     pub current_value: f64,
